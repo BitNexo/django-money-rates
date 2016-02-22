@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import logging
 import json
+from datetime import datetime
 
 from django.core.exceptions import ImproperlyConfigured
 from django.utils import six
@@ -46,10 +47,14 @@ class BaseRateBackend(object):
         raise NotImplementedError
 
     def update_rates(self):
-        """
-        Creates or updates rates for a source
-        """
-        source, created = RateSource.objects.get_or_create(name=self.get_source_name())
+        """Creates or updates rates for a source"""
+
+        # Create new `RateSource` obj hourly, otherwise only update
+        iso_dt = datetime.now().isoformat().split(':')[0]
+        name = '%s-%s' % (self.get_source_name(), iso_dt)
+        source, created = RateSource.objects.get_or_create(name=name)
+
+        # Set base curreny and save
         source.base_currency = self.get_base_currency()
         source.save()
 
