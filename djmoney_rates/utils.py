@@ -25,7 +25,8 @@ def get_rate_source():
     """Get the default Rate Source and return it."""
     backend = money_rates_settings.DEFAULT_BACKEND()
     try:
-        return RateSource.objects.get(name=backend.get_source_name())
+        # Get latest update of open ex rates
+        return RateSource.objects.filter(name__istartswith=backend.get_source_name()).latest('id')
     except RateSource.DoesNotExist:
         raise CurrencyConversionException(
             "Rate for %s source do not exists. "
